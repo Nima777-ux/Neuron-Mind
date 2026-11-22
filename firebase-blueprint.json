@@ -1,0 +1,438 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public workspace preferences for a Neuron Mind user without PII.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "autoDetectLanguage": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "preferredLanguage", "autoDetectLanguage", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated private user PII document.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 320
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "updatedAt"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Assistant conversation thread owned by a user.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "lastLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerId", "title", "lastLanguage", "createdAt", "updatedAt"]
+    },
+    "ConversationMessage": {
+      "title": "ConversationMessage",
+      "description": "Individual message inside a user conversation.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "conversationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "assistant"]
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32000
+        },
+        "language": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "conversationId", "ownerId", "role", "content", "language", "createdAt"]
+    },
+    "TaskItem": {
+      "title": "TaskItem",
+      "description": "Language-independent structured user task record.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "originalText": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["todo", "in_progress", "completed"]
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "dueDate": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "clientMutationId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerId", "title", "sourceLanguage", "status", "priority", "createdAt", "updatedAt"]
+    },
+    "CalendarEvent": {
+      "title": "CalendarEvent",
+      "description": "Structured user calendar event synchronized across languages.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "originalText": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "startTime": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "endTime": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "clientMutationId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerId", "title", "sourceLanguage", "startTime", "createdAt", "updatedAt"]
+    },
+    "DocumentFile": {
+      "title": "DocumentFile",
+      "description": "Structured personal workspace document or note with offline cache support.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 32000
+        },
+        "folder": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "cachedOffline": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerId", "title", "content", "folder", "sourceLanguage", "cachedOffline", "createdAt", "updatedAt"]
+    },
+    "MemoryItem": {
+      "title": "MemoryItem",
+      "description": "Durable user memory or preference accessible across English and Persian.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "fact": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "category": {
+          "type": "string",
+          "enum": ["preference", "context", "workflow"]
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerId", "fact", "category", "sourceLanguage", "createdAt", "updatedAt"]
+    },
+    "AutomationRule": {
+      "title": "AutomationRule",
+      "description": "User-defined reminder or recurring automation workflow.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "trigger": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "actionSummary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "enum": ["en", "fa"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "ownerId", "name", "trigger", "actionSummary", "enabled", "sourceLanguage", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User workspace preferences without PII."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Private user PII such as email address."
+    },
+    "/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/Conversation" },
+      "description": "User assistant conversation threads."
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ConversationMessage" },
+      "description": "Messages belonging to a specific user conversation."
+    },
+    "/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/TaskItem" },
+      "description": "Language-independent tasks owned by the user."
+    },
+    "/events/{eventId}": {
+      "schema": { "$ref": "#/entities/CalendarEvent" },
+      "description": "Calendar events owned by the user."
+    },
+    "/documents/{documentId}": {
+      "schema": { "$ref": "#/entities/DocumentFile" },
+      "description": "Workspace documents and notes owned by the user."
+    },
+    "/memories/{memoryId}": {
+      "schema": { "$ref": "#/entities/MemoryItem" },
+      "description": "User long-term assistant memory items."
+    },
+    "/automations/{automationId}": {
+      "schema": { "$ref": "#/entities/AutomationRule" },
+      "description": "User automation and reminder rules."
+    }
+  }
+}

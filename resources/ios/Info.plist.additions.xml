@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Merge these keys into ios/App/App/Info.plist after running `npx cap add ios` -->
+<dict>
+  <key>CFBundleDisplayName</key>
+  <string>Neuron Mind</string>
+
+  <!-- Microphone & Speech Recognition -->
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Neuron Mind uses the microphone for optional voice dictation in English and Persian.</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Neuron Mind uses speech recognition to transcribe your voice prompts into workspace messages.</string>
+
+  <!-- Camera & Photo/Document Access -->
+  <key>NSCameraUsageDescription</key>
+  <string>Neuron Mind accesses the camera only when you choose to scan or attach documents.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>Neuron Mind accesses your photo library only when you select files to import into your workspace.</string>
+
+  <!-- Background Modes for Push & Sync -->
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+    <string>remote-notification</string>
+  </array>
+
+  <!-- Support both iPhone and iPad multitasking -->
+  <key>UIRequiresFullScreen</key>
+  <false/>
+</dict>

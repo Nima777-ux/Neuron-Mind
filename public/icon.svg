@@ -1,0 +1,40 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nm-bg" x1="48" y1="32" x2="464" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1D4ED8"/>
+      <stop offset="48%" stop-color="#102A5C"/>
+      <stop offset="100%" stop-color="#07132B"/>
+    </linearGradient>
+    <radialGradient id="nm-glow" cx="50%" cy="46%" r="50%">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.44"/>
+      <stop offset="100%" stop-color="#0A1936" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="nm-rim" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#93C5FD" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#3B82F6" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#60A5FA" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="nm-line" x1="112" y1="112" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="100%" stop-color="#7DD3FC"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="16" y="16" width="480" height="480" rx="128" fill="url(#nm-bg)" stroke="url(#nm-rim)" stroke-width="12"/>
+  <rect x="24" y="24" width="464" height="464" rx="120" fill="url(#nm-glow)"/>
+
+  <circle cx="256" cy="256" r="164" stroke="#7DD3FC" stroke-opacity="0.24" stroke-width="10" stroke-dasharray="44 28"/>
+
+  <path d="M256 112L380 184V328L256 400L132 328V184L256 112Z" stroke="url(#nm-line)" stroke-opacity="0.58" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M256 112V400M132 184L380 328M380 184L132 328" stroke="url(#nm-line)" stroke-opacity="0.9" stroke-width="15" stroke-linecap="round"/>
+
+  <circle cx="256" cy="112" r="24" fill="#E0F2FE"/>
+  <circle cx="380" cy="184" r="22" fill="#93C5FD"/>
+  <circle cx="380" cy="328" r="22" fill="#BAE6FD"/>
+  <circle cx="256" cy="400" r="24" fill="#7DD3FC"/>
+  <circle cx="132" cy="328" r="22" fill="#93C5FD"/>
+  <circle cx="132" cy="184" r="22" fill="#BAE6FD"/>
+
+  <path d="M256 172L281.6 230.4L340 256L281.6 281.6L256 340L230.4 281.6L172 256L230.4 230.4L256 172Z" fill="#FFFFFF" stroke="#0B1B3B" stroke-width="10" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="19" fill="#1D4ED8"/>
+</svg>

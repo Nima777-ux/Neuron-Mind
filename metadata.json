@@ -1,0 +1,6 @@
+{
+  "name": "Meridian",
+  "description": "Foundational workspace for a central personal AI assistant managing tasks, emails, files, calendar, memory, and automations.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,360 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 0: Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Pillar 3: Global hardened primitives
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwnerUid(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'preferredLanguage', 'autoDetectLanguage', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'preferredLanguage', 'autoDetectLanguage', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120
+        && data.preferredLanguage in ['en', 'fa']
+        && data.autoDetectLanguage is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserPrivateInfo(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.email is string && data.email.size() <= 320
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidConversation(data, conversationId) {
+      return data.keys().hasAll(['id', 'ownerId', 'title', 'lastLanguage', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerId', 'title', 'lastLanguage', 'createdAt', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == conversationId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 200
+        && data.lastLanguage in ['en', 'fa']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidConversationMessage(data, conversationId, messageId) {
+      return data.keys().hasAll(['id', 'conversationId', 'ownerId', 'role', 'content', 'language', 'createdAt'])
+        && data.keys().hasOnly(['id', 'conversationId', 'ownerId', 'role', 'content', 'language', 'model', 'createdAt'])
+        && isValidId(data.id)
+        && data.id == messageId
+        && isValidId(data.conversationId)
+        && data.conversationId == conversationId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.role in ['user', 'assistant']
+        && data.content is string && data.content.size() >= 1 && data.content.size() <= 32000
+        && data.language in ['en', 'fa']
+        && (!('model' in data) || (data.model is string && data.model.size() <= 80))
+        && data.createdAt is timestamp;
+    }
+
+    function isValidTaskItem(data, taskId) {
+      return data.keys().hasAll(['id', 'ownerId', 'title', 'sourceLanguage', 'status', 'priority', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerId', 'title', 'originalText', 'sourceLanguage', 'status', 'priority', 'dueDate', 'clientMutationId', 'createdAt', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == taskId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 300
+        && (!('originalText' in data) || (data.originalText is string && data.originalText.size() <= 1000))
+        && data.sourceLanguage in ['en', 'fa']
+        && data.status in ['todo', 'in_progress', 'completed']
+        && data.priority in ['low', 'medium', 'high']
+        && (!('dueDate' in data) || (data.dueDate is string && data.dueDate.size() <= 40))
+        && (!('clientMutationId' in data) || isValidId(data.clientMutationId))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCalendarEvent(data, eventId) {
+      return data.keys().hasAll(['id', 'ownerId', 'title', 'sourceLanguage', 'startTime', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerId', 'title', 'originalText', 'sourceLanguage', 'startTime', 'endTime', 'location', 'clientMutationId', 'createdAt', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == eventId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 300
+        && (!('originalText' in data) || (data.originalText is string && data.originalText.size() <= 1000))
+        && data.sourceLanguage in ['en', 'fa']
+        && data.startTime is string && data.startTime.size() >= 1 && data.startTime.size() <= 40
+        && (!('endTime' in data) || (data.endTime is string && data.endTime.size() <= 40))
+        && (!('location' in data) || (data.location is string && data.location.size() <= 200))
+        && (!('clientMutationId' in data) || isValidId(data.clientMutationId))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidDocumentFile(data, documentId) {
+      return data.keys().hasAll(['id', 'ownerId', 'title', 'content', 'folder', 'sourceLanguage', 'cachedOffline', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerId', 'title', 'content', 'folder', 'sourceLanguage', 'cachedOffline', 'createdAt', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == documentId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 300
+        && data.content is string && data.content.size() <= 32000
+        && data.folder is string && data.folder.size() >= 1 && data.folder.size() <= 120
+        && data.sourceLanguage in ['en', 'fa']
+        && data.cachedOffline is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMemoryItem(data, memoryId) {
+      return data.keys().hasAll(['id', 'ownerId', 'fact', 'category', 'sourceLanguage', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerId', 'fact', 'category', 'sourceLanguage', 'createdAt', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == memoryId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.fact is string && data.fact.size() >= 1 && data.fact.size() <= 1000
+        && data.category in ['preference', 'context', 'workflow']
+        && data.sourceLanguage in ['en', 'fa']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAutomationRule(data, automationId) {
+      return data.keys().hasAll(['id', 'ownerId', 'name', 'trigger', 'actionSummary', 'enabled', 'sourceLanguage', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'ownerId', 'name', 'trigger', 'actionSummary', 'enabled', 'sourceLanguage', 'createdAt', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == automationId
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 200
+        && data.trigger is string && data.trigger.size() >= 1 && data.trigger.size() <= 200
+        && data.actionSummary is string && data.actionSummary.size() >= 1 && data.actionSummary.size() <= 500
+        && data.enabled is bool
+        && data.sourceLanguage in ['en', 'fa']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Users (preferences only)
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwnerUid(userId);
+      allow list: if false;
+      allow create: if isValidId(userId)
+        && isOwnerUid(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isOwnerUid(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'preferredLanguage', 'autoDetectLanguage', 'updatedAt']);
+      allow delete: if isValidId(userId) && isOwnerUid(userId);
+
+      // Private PII subcollection
+      match /private/{docId} {
+        allow get: if isValidId(userId) && isValidId(docId) && isOwnerUid(userId);
+        allow list: if false;
+        allow create: if isValidId(userId)
+          && isValidId(docId)
+          && isOwnerUid(userId)
+          && isValidUserPrivateInfo(incoming(), userId)
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId)
+          && isValidId(docId)
+          && isOwnerUid(userId)
+          && isValidUserPrivateInfo(incoming(), userId)
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt']);
+        allow delete: if isValidId(userId) && isValidId(docId) && isOwnerUid(userId);
+      }
+    }
+
+    // Conversations & nested messages
+    match /conversations/{conversationId} {
+      allow get: if isValidId(conversationId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(conversationId)
+        && isSignedIn()
+        && isValidConversation(incoming(), conversationId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(conversationId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidConversation(incoming(), conversationId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'lastLanguage', 'updatedAt']);
+      allow delete: if isValidId(conversationId) && isSignedIn() && existing().ownerId == request.auth.uid;
+
+      match /messages/{messageId} {
+        function parentConversation() {
+          return get(/databases/$(database)/documents/conversations/$(conversationId)).data;
+        }
+
+        allow get: if isValidId(conversationId) && isValidId(messageId)
+          && isSignedIn()
+          && existing().ownerId == request.auth.uid
+          && parentConversation().ownerId == request.auth.uid;
+        allow list: if isValidId(conversationId)
+          && isSignedIn()
+          && resource.data.ownerId == request.auth.uid;
+        allow create: if isValidId(conversationId) && isValidId(messageId)
+          && isSignedIn()
+          && isValidConversationMessage(incoming(), conversationId, messageId)
+          && exists(/databases/$(database)/documents/conversations/$(conversationId))
+          && parentConversation().ownerId == request.auth.uid
+          && incoming().createdAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(conversationId) && isValidId(messageId)
+          && isSignedIn()
+          && existing().ownerId == request.auth.uid
+          && parentConversation().ownerId == request.auth.uid;
+      }
+    }
+
+    // Tasks
+    match /tasks/{taskId} {
+      allow get: if isValidId(taskId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(taskId)
+        && isSignedIn()
+        && isValidTaskItem(incoming(), taskId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(taskId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidTaskItem(incoming(), taskId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['title', 'originalText', 'priority', 'dueDate', 'status', 'clientMutationId', 'updatedAt'])
+        );
+      allow delete: if isValidId(taskId) && isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    // Calendar Events
+    match /events/{eventId} {
+      allow get: if isValidId(eventId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(eventId)
+        && isSignedIn()
+        && isValidCalendarEvent(incoming(), eventId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(eventId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidCalendarEvent(incoming(), eventId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'originalText', 'startTime', 'endTime', 'location', 'clientMutationId', 'updatedAt']);
+      allow delete: if isValidId(eventId) && isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    // Documents / Files
+    match /documents/{documentId} {
+      allow get: if isValidId(documentId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(documentId)
+        && isSignedIn()
+        && isValidDocumentFile(incoming(), documentId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(documentId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidDocumentFile(incoming(), documentId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'folder', 'cachedOffline', 'updatedAt']);
+      allow delete: if isValidId(documentId) && isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    // Memories
+    match /memories/{memoryId} {
+      allow get: if isValidId(memoryId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(memoryId)
+        && isSignedIn()
+        && isValidMemoryItem(incoming(), memoryId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(memoryId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidMemoryItem(incoming(), memoryId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['fact', 'category', 'updatedAt']);
+      allow delete: if isValidId(memoryId) && isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    // Automations
+    match /automations/{automationId} {
+      allow get: if isValidId(automationId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(automationId)
+        && isSignedIn()
+        && isValidAutomationRule(incoming(), automationId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(automationId)
+        && isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && isValidAutomationRule(incoming(), automationId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['enabled', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'trigger', 'actionSummary', 'enabled', 'updatedAt'])
+        );
+      allow delete: if isValidId(automationId) && isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+  }
+}
